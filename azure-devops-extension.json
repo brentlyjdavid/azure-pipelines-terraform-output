@@ -108,6 +108,22 @@
       "properties": {
         "name": "tasks/TerraformOutput"
       }
+    },
+    {
+      "id": "pullrequest-terraform-tab",
+      "type": "ms.vss-web.pull-request-tab",
+      "description": "Embed Terraform Output in PRs",
+      "targets": [
+        "ms.vss-code-web.pull-request-details-view"
+      ],
+      "properties": {
+        "name": "Terraform Plan",
+        "uri": "dist/TerraformTab/tabContent.html",
+        "registeredObjectId": "registerPullRequest",
+        "supportsTasks": [
+          "88279389-1419-4920-8f6c-b16cfccb90d9"
+        ]
+      }
     }
   ]
 }

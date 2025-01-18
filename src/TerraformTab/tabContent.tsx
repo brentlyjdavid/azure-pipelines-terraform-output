@@ -39,6 +39,13 @@ SDK.ready().then(() => {
         );
       });
     }
+    else if (typeof config.pullRequest === "object") {
+      var attachmentClient = new PullRequestAttachmentClient(config.pullRequest);
+      ReactDOM.render(
+        <ReportPanel attachmentClient={attachmentClient} />,
+        document.getElementById("terraform-container")
+      );
+    }
   } catch (error) {
     console.error(error);
   }
@@ -316,6 +323,24 @@ class ReleaseAttachmentClient extends BaseAttachmentClient<ReleaseTaskAttachment
       this.attachments = attachments;
     } catch (error) {
       console.error('Unable to load Terraform Plans', error);
+    }
+  }
+}
+
+class PullRequestAttachmentClient extends BaseAttachmentClient<Attachment> {
+  private pullRequest: any;
+
+  constructor(pullRequest: any) {
+    super();
+    this.pullRequest = pullRequest;
+  }
+
+  async fetchAttachments() {
+    const buildClient: BuildRestClient = getClient(BuildRestClient);
+    const builds = await buildClient.getBuilds(this.pullRequest.repository.id, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, this.pullRequest.sourceRefName);
+    if (builds.length > 0) {
+      const build = builds[0];
+      this.attachments = await buildClient.getAttachments(build.project.id, build.id, "terraform.plan");
     }
   }
 }

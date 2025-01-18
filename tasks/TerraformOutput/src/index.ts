@@ -2,6 +2,8 @@ import * as path from 'path';
 import * as task from 'azure-pipelines-task-lib/task';
 import { TaskResult } from 'azure-pipelines-task-lib/task';
 import { IExecOptions } from 'azure-pipelines-task-lib/toolrunner';
+import { Build, BuildRestClient } from 'azure-devops-extension-api/Build';
+import { getClient } from 'azure-devops-extension-api';
 
 function handleTerraformOutput(terraformPath: string, filePath: string, workingDirectory: string, inferArtifactName: boolean) {
   const terraformTool = task.tool(terraformPath);
@@ -40,6 +42,30 @@ function handleTerraformOutput(terraformPath: string, filePath: string, workingD
   task.debug(`Output file written: ${outputFile}`);
   task.addAttachment('terraform.plan', artifactName, outputFile);
   console.log(`Uploaded Plan Output.`);
+}
+
+async function handlePullRequestOutput(pullRequest: any) {
+  const buildClient: BuildRestClient = getClient(BuildRestClient);
+  const builds = await buildClient.getBuilds(pullRequest.repository.id, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, pullRequest.sourceRefName);
+  if (builds.length > 0) {
+    const build = builds[0];
+    const attachments = await buildClient.getAttachments(build.project.id, build.id, "terraform.plan");
+    if (attachments.length > 0) {
+      const attachment = attachments[0];
+      const headers = await getAuthHeaders();
+      const response = await fetch(attachment._links.self.href, headers);
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+      const attachmentContent = await response.text();
+      const stagingPath = task.getVariable('Build.ArtifactStagingDirectory') ?? task.getVariable('System.ArtifactsDirectory');
+      const outputFile = path.join(stagingPath, attachment.name);
+      task.writeFile(outputFile, attachmentContent);
+      task.debug(`Output file written: ${outputFile}`);
+      task.addAttachment('terraform.plan', attachment.name, outputFile);
+      console.log(`Uploaded Plan Output.`);
+    }
+  }
 }
 
 async function run() {
@@ -88,6 +114,11 @@ async function run() {
     const workingDirectory = path.dirname(outputFilePath);
     const inferArtifactName = task.getBoolInput('inferArtifactName');
     handleTerraformOutput(terraformPath, outputFilePath, workingDirectory, inferArtifactName);
+  }
+
+  const pullRequest = task.getVariable('System.PullRequest.PullRequestId');
+  if (pullRequest) {
+    await handlePullRequestOutput(pullRequest);
   }
 }
 
