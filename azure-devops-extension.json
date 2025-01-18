@@ -1,13 +1,11 @@
 {
   "manifestVersion": 1,
-  "id": "terraform-output",
-  "publisher": "JaydenMaalouf",
-  "version": "1.2.2",
+  "id": "devrite-terraform-output",
+  "publisher": "DevRite",
+  "version": "1.0.8",
   "name": "Terraform Output",
   "description": "Adds a tab for Terraform Plan outputs",
-  "galleryFlags": [
-    "Public"
-  ],
+  "public": false,
   "icons": {
     "default": "images/icon.png",
     "large": "images/icon.png"
@@ -62,10 +60,6 @@
       "addressable": true
     }
   ],
-  "repository": {
-    "type": "git",
-    "uri": "https://github.com/JaydenMaalouf/azure-pipelines-terraform-output"
-  },
   "contributions": [
     {
       "id": "pipeline-terraform-tab",
@@ -79,28 +73,13 @@
         "uri": "dist/TerraformTab/tabContent.html",
         "registeredObjectId": "registerBuild",
         "supportsTasks": [
-          "88279389-1419-4920-8f6c-b16cfccb90d9"
+          "197a8501-7995-444b-a0c7-17d69a1226ce"
         ],
         "dynamic": true
       }
     },
     {
-      "id": "releases-terraform-tab",
-      "type": "ms.vss-web.tab",
-      "description": "Embed Terraform Output in Azure Releases",
-      "targets": [
-        "ms.vss-releaseManagement-web.release-environment-editor-tab"
-      ],
-      "properties": {
-        "name": "Terraform Plan",
-        "uri": "dist/TerraformTab/tabContent.html",
-        "supportsTasks": [
-          "88279389-1419-4920-8f6c-b16cfccb90d9"
-        ]
-      }
-    },
-    {
-      "id": "TerraformOutput",
+      "id": "DevRiteTerraformOutput",
       "type": "ms.vss-distributed-task.task",
       "targets": [
         "ms.vss-distributed-task.tasks"
@@ -110,19 +89,16 @@
       }
     },
     {
-      "id": "pullrequest-terraform-tab",
-      "type": "ms.vss-web.pull-request-tab",
+      "id": "DevRitepullrequest-terraform-tab",
+      "type": "ms.vss-web.tab",
       "description": "Embed Terraform Output in PRs",
       "targets": [
-        "ms.vss-code-web.pull-request-details-view"
-      ],
+                "ms.vss-code-web.pr-tabs"
+            ],
       "properties": {
         "name": "Terraform Plan",
         "uri": "dist/TerraformTab/tabContent.html",
-        "registeredObjectId": "registerPullRequest",
-        "supportsTasks": [
-          "88279389-1419-4920-8f6c-b16cfccb90d9"
-        ]
+        "registeredObjectId": "registerPullRequest"
       }
     }
   ]

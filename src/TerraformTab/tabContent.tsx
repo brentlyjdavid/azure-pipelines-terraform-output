@@ -10,7 +10,7 @@ import { Observer } from "azure-devops-ui/Observer";
 import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { GroupedItemProvider } from "azure-devops-ui/Utilities/GroupedItemProvider";
-import { Attachment, Build, BuildRestClient } from "azure-devops-extension-api/Build";
+import { Attachment, Build, BuildReason, BuildRestClient, BuildResult, BuildStatus } from "azure-devops-extension-api/Build";
 import { Location } from "azure-devops-ui/Utilities/Position";
 import { ReleaseEnvironment, ReleaseRestClient, ReleaseTaskAttachment } from "azure-devops-extension-api/Release";
 import { getClient, CommonServiceIds, IProjectPageService } from "azure-devops-extension-api";
@@ -23,6 +23,8 @@ SDK.init();
 SDK.ready().then(() => {
   try {
     const config = SDK.getConfiguration();
+    console.log(config);
+
     if (typeof config.releaseEnvironment === "object") {
       var attachmentClient = new ReleaseAttachmentClient(config.releaseEnvironment);
       ReactDOM.render(
@@ -40,9 +42,9 @@ SDK.ready().then(() => {
       });
     }
     else if (typeof config.pullRequest === "object") {
-      var attachmentClient = new PullRequestAttachmentClient(config.pullRequest);
+      var prAttachmentClient = new PullRequestAttachmentClient(config.pullRequest);
       ReactDOM.render(
-        <ReportPanel attachmentClient={attachmentClient} />,
+        <ReportPanel attachmentClient={prAttachmentClient} />,
         document.getElementById("terraform-container")
       );
     }
@@ -337,10 +339,19 @@ class PullRequestAttachmentClient extends BaseAttachmentClient<Attachment> {
 
   async fetchAttachments() {
     const buildClient: BuildRestClient = getClient(BuildRestClient);
-    const builds = await buildClient.getBuilds(this.pullRequest.repository.id, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, this.pullRequest.sourceRefName);
+    console.log(this.pullRequest);
+    BuildReason.PullRequest
+    const builds = await buildClient.getBuilds(this.pullRequest.repository.project.id, null, null, null, null, null, null, BuildReason.PullRequest, BuildStatus.Completed, BuildResult.Succeeded);
+    console.log(builds);
     if (builds.length > 0) {
-      const build = builds[0];
-      this.attachments = await buildClient.getAttachments(build.project.id, build.id, "terraform.plan");
+      for(const build of builds){
+        if(build.sourceVersion == this.pullRequest.lastMergeCommitId) {
+          if(build.status === BuildStatus.Completed){
+            this.attachments = await buildClient.getAttachments(build.project.id, build.id, "terraform.plan");
+          }
+          break; //break always if we find a build, no reason to keep going
+        }
+      }
     }
   }
 }
