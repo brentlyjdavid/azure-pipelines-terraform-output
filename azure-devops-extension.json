@@ -3,7 +3,7 @@
   "id": "devrite-terraform-output",
   "publisher": "DevRite",
   "version": "1.0.8",
-  "name": "Terraform Output",
+  "name": "Terraform Plan UI Output",
   "description": "Adds a tab for Terraform Plan outputs",
   "public": false,
   "icons": {
@@ -62,7 +62,7 @@
   ],
   "contributions": [
     {
-      "id": "pipeline-terraform-tab",
+      "id": "pipeline-terraform-plan-tab",
       "type": "ms.vss-build-web.build-results-tab",
       "description": "Embed Terraform Output in Azure Pipelines Build",
       "targets": [
@@ -79,7 +79,7 @@
       }
     },
     {
-      "id": "DevRiteTerraformOutput",
+      "id": "TerraformPublishPlan",
       "type": "ms.vss-distributed-task.task",
       "targets": [
         "ms.vss-distributed-task.tasks"
@@ -89,7 +89,7 @@
       }
     },
     {
-      "id": "DevRitepullrequest-terraform-tab",
+      "id": "pullrequest-terraform-plan-tab",
       "type": "ms.vss-web.tab",
       "description": "Embed Terraform Output in PRs",
       "targets": [

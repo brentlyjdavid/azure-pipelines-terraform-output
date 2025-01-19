@@ -91,7 +91,7 @@ class ReportPanel<T extends AttachmentType> extends React.Component<ReportPanelP
     return (
       <Surface background={SurfaceBackground.neutral}>
         <Page className="flex-grow">
-          <div className="page-content page-content-top">
+          <div className="page-content-top">
             <div style={{ marginBottom: "8px" }}>
               <Dropdown
                 ariaLabel="Loading"

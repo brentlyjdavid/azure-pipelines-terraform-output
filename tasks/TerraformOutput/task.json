@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "197a8501-7995-444b-a0c7-17d69a1226ce",
-  "name": "DevRiteTerraformOutput",
+  "name": "TerraformPublishPlan",
   "friendlyName": "Terraform Load Output",
   "description": "Load Terraform Output into Terraform Tab",
   "helpMarkDown": "",
