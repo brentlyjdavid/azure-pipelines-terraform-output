@@ -10,7 +10,7 @@ import { Observer } from "azure-devops-ui/Observer";
 import { Surface, SurfaceBackground } from "azure-devops-ui/Surface";
 import { ObservableValue } from "azure-devops-ui/Core/Observable";
 import { GroupedItemProvider } from "azure-devops-ui/Utilities/GroupedItemProvider";
-import { Attachment, Build, BuildRestClient } from "azure-devops-extension-api/Build";
+import { Attachment, Build, BuildReason, BuildRestClient, BuildResult, BuildStatus } from "azure-devops-extension-api/Build";
 import { Location } from "azure-devops-ui/Utilities/Position";
 import { ReleaseEnvironment, ReleaseRestClient, ReleaseTaskAttachment } from "azure-devops-extension-api/Release";
 import { getClient, CommonServiceIds, IProjectPageService } from "azure-devops-extension-api";
@@ -23,6 +23,8 @@ SDK.init();
 SDK.ready().then(() => {
   try {
     const config = SDK.getConfiguration();
+    console.log(config);
+
     if (typeof config.releaseEnvironment === "object") {
       var attachmentClient = new ReleaseAttachmentClient(config.releaseEnvironment);
       ReactDOM.render(
@@ -38,6 +40,13 @@ SDK.ready().then(() => {
           document.getElementById("terraform-container")
         );
       });
+    }
+    else if (typeof config.pullRequest === "object") {
+      var prAttachmentClient = new PullRequestAttachmentClient(config.pullRequest);
+      ReactDOM.render(
+        <ReportPanel attachmentClient={prAttachmentClient} />,
+        document.getElementById("terraform-container")
+      );
     }
   } catch (error) {
     console.error(error);
@@ -82,7 +91,7 @@ class ReportPanel<T extends AttachmentType> extends React.Component<ReportPanelP
     return (
       <Surface background={SurfaceBackground.neutral}>
         <Page className="flex-grow">
-          <div className="page-content page-content-top">
+          <div className="page-content-top">
             <div style={{ marginBottom: "8px" }}>
               <Dropdown
                 ariaLabel="Loading"
@@ -316,6 +325,33 @@ class ReleaseAttachmentClient extends BaseAttachmentClient<ReleaseTaskAttachment
       this.attachments = attachments;
     } catch (error) {
       console.error('Unable to load Terraform Plans', error);
+    }
+  }
+}
+
+class PullRequestAttachmentClient extends BaseAttachmentClient<Attachment> {
+  private pullRequest: any;
+
+  constructor(pullRequest: any) {
+    super();
+    this.pullRequest = pullRequest;
+  }
+
+  async fetchAttachments() {
+    const buildClient: BuildRestClient = getClient(BuildRestClient);
+    console.log(this.pullRequest);
+    BuildReason.PullRequest
+    const builds = await buildClient.getBuilds(this.pullRequest.repository.project.id, null, null, null, null, null, null, BuildReason.PullRequest, BuildStatus.Completed, BuildResult.Succeeded);
+    console.log(builds);
+    if (builds.length > 0) {
+      for(const build of builds){
+        if(build.sourceVersion == this.pullRequest.lastMergeCommitId) {
+          if(build.status === BuildStatus.Completed){
+            this.attachments = await buildClient.getAttachments(build.project.id, build.id, "terraform.plan");
+          }
+          break; //break always if we find a build, no reason to keep going
+        }
+      }
     }
   }
 }

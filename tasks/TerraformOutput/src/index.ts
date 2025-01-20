@@ -37,7 +37,7 @@ function handleTerraformOutput(terraformPath: string, filePath: string, workingD
   const stagingPath = task.getVariable('Build.ArtifactStagingDirectory') ?? task.getVariable('System.ArtifactsDirectory');
   const outputFile = path.join(stagingPath, artifactName);
   task.writeFile(outputFile, result.stdout);
-  task.debug(`Output file written: ${outputFile}`);
+  console.log(`Output file written: ${outputFile}`);
   task.addAttachment('terraform.plan', artifactName, outputFile);
   console.log(`Uploaded Plan Output.`);
 }
