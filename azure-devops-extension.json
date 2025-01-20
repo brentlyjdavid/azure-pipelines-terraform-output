@@ -2,7 +2,7 @@
   "manifestVersion": 1,
   "id": "devrite-terraform-output",
   "publisher": "DevRite",
-  "version": "1.0.8",
+  "version": "1.0.13",
   "name": "Terraform Plan UI Output",
   "description": "Adds a tab for Terraform Plan outputs",
   "public": false,
